@@ -47,6 +47,7 @@ export class Viewer {
       tNormal: this.gBuffer.texture[1],
       tFragPos: this.gBuffer.texture[2],
       tDepth: this.gBuffer.depthTexture,
+      cameraMatrixWorld: this.camera.matrixWorld,
     });
 
     this.canvasSize = new THREE.Vector2();
