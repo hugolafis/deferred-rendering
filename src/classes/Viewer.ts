@@ -32,8 +32,8 @@ export class Viewer {
     this.scene.add(ambient);
 
     this.fsQuad = new FullScreenQuad();
-    const count = 2;
-    // Color + Alpha, Normals + Specularity
+    const count = 3;
+    // Color + Alpha, Normals + Specularity, FragPos
     this.gBuffer = new THREE.WebGLMultipleRenderTargets(1, 1, count, {
       depthBuffer: true,
       format: THREE.RGBAFormat,
@@ -45,6 +45,7 @@ export class Viewer {
     this.compositeShader = new CompositeShader({
       tDiffuse: this.gBuffer.texture[0],
       tNormal: this.gBuffer.texture[1],
+      tFragPos: this.gBuffer.texture[2],
       tDepth: this.gBuffer.depthTexture,
     });
 
