@@ -15,10 +15,10 @@ if (!canvas) {
  */
 THREE.ColorManagement.enabled = true;
 const renderer = new THREE.WebGLRenderer({
-  canvas: canvas
+  canvas: canvas,
 });
 renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+renderer.setSize(1, 1, false);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.LinearToneMapping;
 renderer.toneMappingExposure = 1.0;

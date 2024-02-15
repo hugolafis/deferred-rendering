@@ -1,13 +1,18 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { DeferredMaterial } from './DeferredMaterial';
+import { FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass';
+import { CompositeShader } from './CompositeShader';
 
 export class Viewer {
   private camera: THREE.PerspectiveCamera;
   private controls: OrbitControls;
   private readonly scene: THREE.Scene;
 
+  private readonly fsQuad: FullScreenQuad;
   private readonly gBuffer: THREE.WebGLMultipleRenderTargets;
+
+  private readonly compositeShader: CompositeShader;
 
   private readonly canvasSize: THREE.Vector2;
   private readonly renderSize: THREE.Vector2;
@@ -26,6 +31,7 @@ export class Viewer {
     this.scene.add(sun);
     this.scene.add(ambient);
 
+    this.fsQuad = new FullScreenQuad();
     const count = 2;
     // Color + Alpha, Normals + Specularity
     this.gBuffer = new THREE.WebGLMultipleRenderTargets(1, 1, count, {
@@ -36,10 +42,16 @@ export class Viewer {
 
     this.gBuffer.depthTexture = new THREE.DepthTexture(1, 1);
 
+    this.compositeShader = new CompositeShader({
+      tDiffuse: this.gBuffer.texture[0],
+      tNormal: this.gBuffer.texture[1],
+      tDepth: this.gBuffer.depthTexture,
+    });
+
     this.canvasSize = new THREE.Vector2();
     this.renderSize = new THREE.Vector2();
 
-    const material = new DeferredMaterial({ color: new THREE.Color() });
+    const material = new DeferredMaterial({ color: new THREE.Color(0xff0000) });
     const box = new THREE.Mesh(new THREE.BoxGeometry(), material);
 
     this.scene.add(box);
@@ -61,6 +73,11 @@ export class Viewer {
       this.camera.updateProjectionMatrix();
     }
 
+    this.renderer.setRenderTarget(this.gBuffer);
     this.renderer.render(this.scene, this.camera);
+
+    this.renderer.setRenderTarget(null);
+    this.fsQuad.material = this.compositeShader;
+    this.fsQuad.render(this.renderer);
   };
 }
