@@ -6,11 +6,14 @@ export interface CompositeShaderParameters {
   tFragPos: THREE.Texture;
   cameraMatrixWorld: THREE.Matrix4;
   tDepth: THREE.DepthTexture;
+  numLights: number;
 }
 
 export class CompositeShader extends THREE.ShaderMaterial {
   constructor(params: CompositeShaderParameters) {
     super();
+
+    this.defines.NUM_LIGHTS = params.numLights;
 
     this.glslVersion = THREE.GLSL3;
     this.uniforms.tDiffuse = { value: params.tDiffuse };
@@ -44,7 +47,7 @@ export class CompositeShader extends THREE.ShaderMaterial {
       uniform sampler2D tFragPos;
 
       uniform mat4 cameraMatrixWorld;
-      uniform PointLight lights[25];
+      uniform PointLight lights[NUM_LIGHTS];
 
       in vec2 vUv;
 
@@ -60,7 +63,6 @@ export class CompositeShader extends THREE.ShaderMaterial {
         float amount = (1.0 / ( 1.0 + lightAttentuation * length(distance)));
 
         contribution += light.color * (dotP * amount * light.brightness);
-        //contribution += vec3(dotP * amount);
       }
 
       void main() {
@@ -75,16 +77,9 @@ export class CompositeShader extends THREE.ShaderMaterial {
         vec3 frag_W = ( cameraMatrixWorld * vec4( fragPos.xyz, 1.0 ) ).xyz;
 
         vec3 pointLightContribution = vec3(0.0);
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < NUM_LIGHTS; i++) {
           getPointLightContribution( frag_W, normal_W, lights[i], pointLightContribution );
         }
-
-        // vec3 frag_W = ( cameraMatrixWorld * vec4( fragPos.xyz, 1.0 ) ).xyz;
-        // vec3 fragToLight = normalize( testLight.position - frag_W );
-
-        // float pointDot = dot( normal_W, fragToLight ); 
-
-        // pointDot *= (1.0 / ( 1.0 + lightAttentuation));
 
         vec3 directLight = diffuseTexel.rgb * (pointLightContribution);
         vec3 emissiveLight = diffuseTexel.rgb * normalTexel.w;

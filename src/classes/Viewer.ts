@@ -6,6 +6,8 @@ import { CompositeShader } from './CompositeShader';
 import { PointLight } from './Light';
 import { seededRandom } from 'three/src/math/MathUtils';
 
+const NUM_LIGHTS = 32;
+
 export class Viewer {
   private camera: THREE.PerspectiveCamera;
   private controls: OrbitControls;
@@ -52,6 +54,7 @@ export class Viewer {
       tFragPos: this.gBuffer.texture[2],
       tDepth: this.gBuffer.depthTexture,
       cameraMatrixWorld: this.camera.matrixWorld,
+      numLights: NUM_LIGHTS,
     });
 
     this.canvasSize = new THREE.Vector2();
@@ -135,9 +138,9 @@ export class Viewer {
   }
 
   private createLights() {
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < NUM_LIGHTS; i++) {
       // todo - set HSL instead of RGB
-      const light = new PointLight(5, new THREE.Color().setHSL(Math.random(), 1, 0.5));
+      const light = new PointLight(1.5, new THREE.Color().setHSL(Math.random(), 1, 0.5));
 
       light.position.set(Math.random() * 25 - 12.5, Math.random() * 3 + 1, Math.random() * 25 - 12.5);
 

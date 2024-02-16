@@ -17,7 +17,7 @@ THREE.ColorManagement.enabled = true;
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
 });
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(1);
 renderer.setSize(1, 1, false);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.LinearToneMapping;
