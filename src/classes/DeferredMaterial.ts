@@ -31,7 +31,13 @@ export class DeferredMaterial extends THREE.ShaderMaterial {
       void main() {
         vNormal = normalize( normalMatrix * normal );
 
-        vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+        vec4 mvPosition = vec4(0.0);
+        #ifdef USE_INSTANCING
+          mvPosition = viewMatrix * instanceMatrix * modelMatrix * vec4( position, 1.0 );
+        #else
+          mvPosition = modelViewMatrix * vec4(position, 1.0);
+        #endif
+
         vFragPos = mvPosition.xyz;
         gl_Position = projectionMatrix * mvPosition;
       }

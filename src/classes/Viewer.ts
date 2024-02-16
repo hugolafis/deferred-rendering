@@ -25,9 +25,9 @@ export class Viewer {
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(75, this.canvas.clientWidth / this.canvas.clientHeight);
-    this.camera.position.set(0, 1, 2);
+    this.camera.position.set(10, 8, 10);
     this.controls = new OrbitControls(this.camera, this.canvas);
-    this.controls.target.set(0, 0.5, 0);
+    this.controls.target.set(2, 0.5, 2);
 
     const ambient = new THREE.AmbientLight(undefined, 0.5);
     const sun = new THREE.DirectionalLight(undefined, 1.0);
@@ -71,6 +71,13 @@ export class Viewer {
       const time = performance.now();
       const size = 25;
       light.position.x = seededRandom(index) * size - size * 0.5 + Math.sin(index + time * 0.001) * 5;
+
+      if (index % 2 === 0) {
+        light.position.y = seededRandom(index) + 1 + Math.sin(index + time * 0.001);
+      } else {
+        light.position.y = seededRandom(index) + 1 + Math.cos(index + time * 0.001);
+      }
+
       light.position.z = seededRandom(index + 1) * size - size * 0.5 + Math.cos(index + time * 0.001) * 5;
 
       const shaderLight = {
@@ -111,21 +118,24 @@ export class Viewer {
     const geometry = new THREE.BoxGeometry();
     const material = new DeferredMaterial({ color: new THREE.Color(), emissive: 0 });
 
-    for (let x = 0; x < 25; x++) {
-      for (let y = 0; y < 25; y++) {
-        const mesh = new THREE.Mesh(geometry, material);
+    const count = 16;
+    const instancedMesh = new THREE.InstancedMesh(geometry, material, count * count);
+    for (let x = 0; x < count; x++) {
+      for (let y = 0; y < count; y++) {
+        const vec = new THREE.Vector3((x - count * 0.5) * 2, 0, (y - count * 0.5) * 2);
+        const matrix = new THREE.Matrix4().compose(vec, new THREE.Quaternion(), new THREE.Vector3(1, 1, 1));
 
-        mesh.position.x = (x - 12.5) * 2;
-        mesh.position.z = (y - 12.5) * 2;
-
-        this.scene.add(mesh);
+        console.log(y + count * x);
+        instancedMesh.setMatrixAt(y + count * x, matrix);
       }
     }
+
+    this.scene.add(instancedMesh);
   }
 
   private createLights() {
-    for (let i = 0; i < 25; i++) {
-      const light = new PointLight(1, new THREE.Color(Math.random(), Math.random(), Math.random()));
+    for (let i = 0; i < 30; i++) {
+      const light = new PointLight(5, new THREE.Color(Math.random(), Math.random(), Math.random()));
 
       light.position.set(Math.random() * 25 - 12.5, Math.random() * 3 + 1, Math.random() * 25 - 12.5);
 
