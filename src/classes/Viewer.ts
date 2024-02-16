@@ -89,6 +89,7 @@ export class Viewer {
       shaderLights.push(shaderLight);
     });
 
+    // todo: fix this rebinding of uniforms
     this.compositeShader.uniforms.lights.value = shaderLights;
 
     // todo: buffer resizing
