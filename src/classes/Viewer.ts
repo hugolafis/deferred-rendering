@@ -3,6 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { DeferredMaterial } from './DeferredMaterial';
 import { FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass';
 import { CompositeShader } from './CompositeShader';
+import { PointLight } from './Light';
+import { seededRandom } from 'three/src/math/MathUtils';
 
 export class Viewer {
   private camera: THREE.PerspectiveCamera;
@@ -16,6 +18,8 @@ export class Viewer {
 
   private readonly canvasSize: THREE.Vector2;
   private readonly renderSize: THREE.Vector2;
+
+  private readonly lights: PointLight[] = [];
 
   constructor(private readonly renderer: THREE.WebGLRenderer, private readonly canvas: HTMLCanvasElement) {
     this.scene = new THREE.Scene();
@@ -33,7 +37,7 @@ export class Viewer {
 
     this.fsQuad = new FullScreenQuad();
     const count = 3;
-    // Color + Alpha, Normals + Specularity, FragPos
+    // Color + Alpha, Normals + Emissive, FragPos
     this.gBuffer = new THREE.WebGLMultipleRenderTargets(1, 1, count, {
       depthBuffer: true,
       format: THREE.RGBAFormat,
@@ -53,14 +57,32 @@ export class Viewer {
     this.canvasSize = new THREE.Vector2();
     this.renderSize = new THREE.Vector2();
 
-    const material = new DeferredMaterial({ color: new THREE.Color(0xff0000) });
-    const box = new THREE.Mesh(new THREE.BoxGeometry(), material);
+    this.createMeshes();
 
-    this.scene.add(box);
+    this.createLights();
   }
 
   readonly update = (dt: number) => {
     this.controls.update();
+
+    // Update light positions
+    const shaderLights: { brightness: number; color: THREE.Color; position: THREE.Vector3 }[] = [];
+    this.lights.forEach((light, index) => {
+      const time = performance.now();
+      const size = 25;
+      light.position.x = seededRandom(index) * size - size * 0.5 + Math.sin(index + time * 0.001) * 5;
+      light.position.z = seededRandom(index + 1) * size - size * 0.5 + Math.cos(index + time * 0.001) * 5;
+
+      const shaderLight = {
+        brightness: light.brightness,
+        color: light.color,
+        position: light.position, //.clone().applyMatrix4(this.camera.matrixWorldInverse),
+      };
+
+      shaderLights.push(shaderLight);
+    });
+
+    this.compositeShader.uniforms.lights.value = shaderLights;
 
     // todo: buffer resizing
     this.canvasSize.set(
@@ -75,11 +97,41 @@ export class Viewer {
       this.camera.updateProjectionMatrix();
     }
 
+    this.renderer.setClearAlpha(0);
     this.renderer.setRenderTarget(this.gBuffer);
     this.renderer.render(this.scene, this.camera);
+    this.renderer.setClearAlpha(1);
 
     this.renderer.setRenderTarget(null);
     this.fsQuad.material = this.compositeShader;
     this.fsQuad.render(this.renderer);
   };
+
+  private createMeshes() {
+    const geometry = new THREE.BoxGeometry();
+    const material = new DeferredMaterial({ color: new THREE.Color(), emissive: 0 });
+
+    for (let x = 0; x < 25; x++) {
+      for (let y = 0; y < 25; y++) {
+        const mesh = new THREE.Mesh(geometry, material);
+
+        mesh.position.x = (x - 12.5) * 2;
+        mesh.position.z = (y - 12.5) * 2;
+
+        this.scene.add(mesh);
+      }
+    }
+  }
+
+  private createLights() {
+    for (let i = 0; i < 25; i++) {
+      const light = new PointLight(1, new THREE.Color(Math.random(), Math.random(), Math.random()));
+
+      light.position.set(Math.random() * 25 - 12.5, Math.random() * 3 + 1, Math.random() * 25 - 12.5);
+
+      this.lights.push(light);
+
+      this.scene.add(light);
+    }
+  }
 }

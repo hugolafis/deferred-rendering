@@ -2,10 +2,12 @@ import * as THREE from 'three';
 
 export interface DeferredMaterialParameters {
   color: THREE.Color;
+  emissive: number;
 }
 
 export interface DeferredMaterialUniforms {
   color: THREE.IUniform<THREE.Color>;
+  emissive: THREE.IUniform<number>;
 }
 
 interface BaseUniforms {
@@ -20,6 +22,7 @@ export class DeferredMaterial extends THREE.ShaderMaterial {
 
     this.glslVersion = THREE.GLSL3;
     this.uniforms.color = { value: params.color };
+    this.uniforms.emissive = { value: params.emissive };
 
     this.vertexShader = `
       out vec3 vNormal;
@@ -40,12 +43,13 @@ export class DeferredMaterial extends THREE.ShaderMaterial {
       layout(location = 2) out vec4 fragPos;
 
       uniform vec3 color;
+      uniform float emissive;
 
       in vec3 vNormal;
       in vec3 vFragPos;
 
       void main() {
-        normal = vec4( vNormal, 0.0 );
+        normal = vec4( vNormal, emissive );
         albedo = vec4( color, 1.0 );
         fragPos = vec4( vFragPos, 0.0 );
       }
