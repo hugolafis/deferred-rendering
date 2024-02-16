@@ -1,5 +1,5 @@
 {
-  "repository": "https://github.com/hugolafis/portal",
+  "repository": "https://github.com/hugolafis/deferred-rendering",
   "license": "UNLICENSED",
   "scripts": {
     "build": "webpack --config ./bundler/webpack.prod.js",
