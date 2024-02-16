@@ -86,12 +86,18 @@ export class CompositeShader extends THREE.ShaderMaterial {
 
         // pointDot *= (1.0 / ( 1.0 + lightAttentuation));
 
-        diffuseTexel.rgb *= (pointLightContribution) + normalTexel.w;
+        vec3 directLight = diffuseTexel.rgb * (pointLightContribution);
+        vec3 emissiveLight = diffuseTexel.rgb * normalTexel.w;
+
+        //diffuseTexel.rgb = vec3(normalTexel.w);
 
         //color = vec4( normalTexel.xyz, 1.0 );
         //color = vec4( vec3(depthTexel.r), 1.0 );
         //color = vec4( fragPos.xyz, 1.0 );
-        color = vec4( diffuseTexel.rgb, 1.0 );
+
+        color = vec4( directLight + emissiveLight, 1.0 );
+
+
         //color = vec4( vec3(pointDot), 1.0 );
 
         //color.rgb = toneMapping( color.rgb );

@@ -135,7 +135,8 @@ export class Viewer {
 
   private createLights() {
     for (let i = 0; i < 30; i++) {
-      const light = new PointLight(5, new THREE.Color(Math.random(), Math.random(), Math.random()));
+      // todo - set HSL instead of RGB
+      const light = new PointLight(5, new THREE.Color().setHSL(Math.random(), 1, 0.5));
 
       light.position.set(Math.random() * 25 - 12.5, Math.random() * 3 + 1, Math.random() * 25 - 12.5);
 
